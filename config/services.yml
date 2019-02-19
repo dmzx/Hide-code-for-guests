@@ -1,0 +1,8 @@
+services:
+    dmzx.hidecodeforguests.listener:
+        class: dmzx\hidecodeforguests\event\listener
+        arguments:
+            - '@language'
+            - '@user'
+        tags:
+            - { name: event.listener }
