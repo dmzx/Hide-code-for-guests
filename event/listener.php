@@ -12,6 +12,7 @@ namespace dmzx\hidecodeforguests\event;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use phpbb\language\language;
 use phpbb\user;
+use phpbb\template\template;
 
 class listener implements EventSubscriberInterface
 {
@@ -21,38 +22,45 @@ class listener implements EventSubscriberInterface
 	/** @var user */
 	protected $user;
 
+	/** @var template */
+	protected $template;
+
+	/** @var string */
+	protected $root_path;
+
+	/** @var string */
+	protected $php_ext;
+
 	/**
 	* Constructor
 	*
-	* @param language				$language
-	* @param user					$user
+	* @param language			$language
+	* @param user				$user
+	* @param template		 	$template
+	* @param string				$root_path
+	* @param string				$php_ext
 	*/
 	public function __construct(
 		language $language,
-		user $user
+		user $user,
+		template $template,
+		$root_path,
+		$php_ext
 	)
 	{
-		$this->language = $language;
-		$this->user 	= $user;
+		$this->language 	= $language;
+		$this->user 		= $user;
+		$this->template 	= $template;
+		$this->root_path 	= $root_path;
+		$this->php_ext 		= $php_ext;
 	}
 
 	static public function getSubscribedEvents()
 	{
 		return [
-			'core.user_setup' 							=> 'load_language',
 			'core.modify_format_display_text_after'		=> 'message_parser_event',
 			'core.modify_text_for_display_after'		=> 'message_parser_event',
 		];
-	}
-
-	public function load_language($event)
-	{
-		$lang_set_ext = $event['lang_set_ext'];
-		$lang_set_ext[] = [
-			'ext_name'	=> 'dmzx/hidecodeforguests',
-			'lang_set'	=> 'common'
-		];
-		$event['lang_set_ext'] = $lang_set_ext;
 	}
 
 	public function message_parser_event($event)
@@ -63,7 +71,16 @@ class listener implements EventSubscriberInterface
 
 			if ($this->user->data['user_id'] == ANONYMOUS)
 			{
-				$text = preg_replace('#<div class="codebox">(.*?)</div>#msi', '<span class="hcfg">' . $this->language->lang('HCFG_PLEASE') . '<a href="ucp.php?mode=login">' . $this->language->lang('HCFG_LOGIN') . '</a>' . $this->language->lang('HCFG_OR') . '<a href="ucp.php?mode=register">' . $this->language->lang('HCFG_REGISTER') . '</a>' . $this->language->lang('HCFG_TO_SEE_THIS_CONTENT') . '</span>',	$text);
+				$this->language->add_lang('common', 'dmzx/hidecodeforguests');
+
+				$this->template->assign_var('S_HIDECODEFORGUESTS', true);
+
+				$url_login = append_sid("{$this->root_path}ucp.{$this->php_ext}", "mode=login");
+				$url_register = append_sid("{$this->root_path}ucp.{$this->php_ext}", "mode=register");
+
+				$hcfg_text =	$this->language->lang('HCFG_TEXT', '<a href="' . $url_login . '">', '</a>', '<a href="' . $url_register . '">', '</a>');
+
+				$text = preg_replace('#<div class="codebox">(.*?)</div>#msi', '<span class="hcfg">' . $hcfg_text . '</span>', $text);
 			}
 			$event['text'] = $text;
 		}

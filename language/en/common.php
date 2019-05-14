@@ -34,9 +34,5 @@ if (empty($lang) || !is_array($lang))
 //
 
 $lang = array_merge($lang, [
-	'HCFG_PLEASE'					=> 'Please ',
-	'HCFG_LOGIN'					=> 'Login',
-	'HCFG_OR'						=> ' or ',
-	'HCFG_REGISTER'					=> 'Register',
-	'HCFG_TO_SEE_THIS_CONTENT'		=> ', to see this code',
+	'HCFG_TEXT'		=> 'Please %sLogin%s or %sRegister%s to see this code',
 ]);
